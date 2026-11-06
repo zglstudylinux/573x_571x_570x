@@ -262,12 +262,16 @@ void ains4_mic_param_set(u8 mode ,s16 ains4_noise_nt)
 		//ains4_cb.smooth_logLrt  		= 0;
 	}
 	else{                                             //enc
-		if(ains4_cb.yuan_en==1){
-			ains4_cb.denoiseBound		    = 6000;  //
+		//原版此处把 denoiseBound 写成固定 6000，完全忽略入参 ains4_noise_nt，
+		//导致运行中无法调降噪量。改为使用入参，有效范围 1~32767（受 s16 形参所限）。
+		//传 <=0 时回退到原默认值 6000，保持对既有调用者的兼容。
+		s16 noise_nt = ains4_noise_nt;
+		if (noise_nt <= 0) {
+			noise_nt = 6000;                //原硬编码值，作为默认
+		} else if (noise_nt > 32767) {      //形参是 s16，上限 32767（传 32768 会先溢出成 -32768）
+			noise_nt = 32767;
 		}
-		else{
-			ains4_cb.denoiseBound		    = 6000;
-		}
+		ains4_cb.denoiseBound		    = noise_nt;
 		ains4_cb.music_lev				 = 11;
 		ains4_cb.overdrive_adapt_en     = 0;
 		ains4_cb.gain_ceil				= 32767;

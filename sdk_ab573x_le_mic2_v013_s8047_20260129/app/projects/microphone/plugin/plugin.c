@@ -4,10 +4,11 @@ volatile int pwrkey_detect_flag;            //pwrkey 820K用于复用检测的�
 
 #if WIRELESS_MIC_AINS4_EN
 //AINS4降噪运行中可调状态。
-//ains4_noise_nt：1~32767，20*log10(nt/32768) 即降噪量。值越小底噪越小（降噪越深），越大越浅。
+//ains4_noise_nt：1~32767，20*log10(nt/32768) 即降噪量。值越小降噪越深，值越大越浅（底噪越大）。
+//初值直接取 AINS4_NOISE_NT，与 ains4_mic_init() 上电时用的值保持同源，避免打印值与实际生效值脱节。
 static s16 ains4_noise_cur = AINS4_NOISE_NT;
 
-#define AINS4_NOISE_MAX         32767
+#define AINS4_NOISE_MAX         32767       //形参是 s16，上限 32767（传 32768 会溢出成负数）
 #define AINS4_NOISE_MIN         1
 
 //PP短按：开/关AINS4降噪（取反标志位后直接下发mute）
@@ -31,11 +32,19 @@ AT(.text.plugin.ains4)
 void plugin_ains4_level_up(void)
 {
     s16 nt = ains4_noise_cur;
-    s16 step = (nt < 200) ? 50 : (nt < 500) ? 100 : (nt < 2000) ? 500 : (nt < 8000) ? 2000 : 8000;
+    s16 step;
 
     if (!wireless_cb.connected_sta) {
         return;
     }
+
+    //步进按当前值分段：低段细调，高段快进，全量程约 12~15 次按完
+    if (nt < 500)        step = 100;
+    else if (nt < 2000)  step = 250;
+    else if (nt < 6000)  step = 500;
+    else if (nt < 12000) step = 1000;
+    else if (nt < 24000) step = 2000;
+    else                 step = 4000;
 
     nt += step;
     if (nt > AINS4_NOISE_MAX) { nt = AINS4_NOISE_MAX; }
@@ -50,11 +59,18 @@ AT(.text.plugin.ains4)
 void plugin_ains4_level_down(void)
 {
     s16 nt = ains4_noise_cur;
-    s16 step = (nt <= 200) ? 50 : (nt <= 500) ? 100 : (nt <= 2000) ? 500 : (nt <= 8000) ? 2000 : 8000;
+    s16 step;
 
     if (!wireless_cb.connected_sta) {
         return;
     }
+
+    if (nt <= 500)       step = 100;
+    else if (nt <= 2000) step = 250;
+    else if (nt <= 6000) step = 500;
+    else if (nt <= 12000) step = 1000;
+    else if (nt <= 24000) step = 2000;
+    else                  step = 4000;
 
     nt -= step;
     if (nt < AINS4_NOISE_MIN) { nt = AINS4_NOISE_MIN; }

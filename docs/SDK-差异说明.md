@@ -152,10 +152,10 @@ YLCRN_L1_32K 关闭后 `WIRELESS_MIC_SRC_EN` 也随之回落为 0（不再需要
 
 ```c
 #if WIRELESS_MIC_AINS4_EN
-//ains4_noise_nt：1~32767，20*log10(nt/32768) 即降噪量。值越小底噪越小（降噪越深），越大越浅。
+//初值直接取 AINS4_NOISE_NT，与 ains4_mic_init() 上电时用的值保持同源，避免打印值与实际生效值脱节
 static s16 ains4_noise_cur = AINS4_NOISE_NT;
 
-#define AINS4_NOISE_MAX         32767
+#define AINS4_NOISE_MAX         32767       //denoiseBound 是 s16，32768 会溢出成负数
 #define AINS4_NOISE_MIN         1
 
 //PP短按：开/关AINS4降噪（取反标志位后直接下发mute）
@@ -177,11 +177,18 @@ void plugin_ains4_toggle(void)
 void plugin_ains4_level_up(void)
 {
     s16 nt = ains4_noise_cur;
-    s16 step = (nt < 200) ? 50 : (nt < 500) ? 100 : (nt < 2000) ? 500 : (nt < 8000) ? 2000 : 8000;
+    s16 step;
 
     if (!wireless_cb.connected_sta) {
         return;
     }
+
+    if (nt < 500)        step = 100;
+    else if (nt < 2000)  step = 250;
+    else if (nt < 6000)  step = 500;
+    else if (nt < 12000) step = 1000;
+    else if (nt < 24000) step = 2000;
+    else                 step = 4000;
 
     nt += step;
     if (nt > AINS4_NOISE_MAX) { nt = AINS4_NOISE_MAX; }
@@ -195,11 +202,18 @@ void plugin_ains4_level_up(void)
 void plugin_ains4_level_down(void)
 {
     s16 nt = ains4_noise_cur;
-    s16 step = (nt <= 200) ? 50 : (nt <= 500) ? 100 : (nt <= 2000) ? 500 : (nt <= 8000) ? 2000 : 8000;
+    s16 step;
 
     if (!wireless_cb.connected_sta) {
         return;
     }
+
+    if (nt <= 500)        step = 100;
+    else if (nt <= 2000)  step = 250;
+    else if (nt <= 6000)  step = 500;
+    else if (nt <= 12000) step = 1000;
+    else if (nt <= 24000) step = 2000;
+    else                  step = 4000;
 
     nt -= step;
     if (nt < AINS4_NOISE_MIN) { nt = AINS4_NOISE_MIN; }
@@ -211,9 +225,7 @@ void plugin_ains4_level_down(void)
 #endif
 ```
 
-等级调节之所以能真正生效，是因为 `ains4_mic_param_set(mode, ains4_noise_nt)` 内部确实使用传入的 `ains4_noise_nt` 赋给 `ains4_cb.denoiseBound`（573x 的 `modules/voice/ains4.c:237`）。这点与 571x 的 `ylcrn_L3_mic_param_set` 不同——后者忽略入参、硬编码降噪量。
-
-步进是分段的：200 以下 +50，500 以下 +100，2000 以下 +500，8000 以下 +2000，再往上 +8000，两端都有明显听感差异。
+步进按当前值分段：从默认 6000 按 PREV 降到 1 需 19 次，按 NEXT 升到 32767 需 15 次。低段步进小、便于细调，高段步进大、能快速拉开差距。
 
 #### 1.3.2 早先的 YLCRN_L1_32K 版本（已被取代，仅作记录）
 
@@ -278,6 +290,98 @@ static void ylcrn_level_apply(s16 level)
 +        break;
 +#endif // WIRELESS_MIC_AINS4_EN
 ```
+
+#### 1.3.3 AINS4 参数失效问题与修复（重要）
+
+**问题**：`ains4_mic_param_set()` 完全忽略它的 `ains4_noise_nt` 形参。
+
+**第一次 AINS4 测试时的实际状态**：
+
+| 项目 | 值 |
+| --- | --- |
+| 配置里的 `AINS4_NOISE_NT` | 500 |
+| plugin 里 `ains4_noise_cur` 初始值 | 500（`= AINS4_NOISE_NT`） |
+| 上电时 `ains4_mic_init()` 的调用 | `ains4_mic_param_set(0, AINS4_NOISE_NT)` → 传入 **500** |
+| **实际生效的 `denoiseBound`** | **6000（硬编码）** |
+| 按键 NEXT/PREV 的效果 | **完全无效**——无论按到多少，`denoiseBound` 恒为 6000 |
+| 串口打印 | 仍会显示 `AINS4 noise = 700` 之类的值，但这是假象 |
+
+也就是说：**第一次 AINS4 测试听到的降噪效果，是硬编码 6000 的效果，与配置里的 500 无关，NEXT/PREV 按键也调不动它。** 当时文档里写的「等级调节能真正生效」是错误结论。
+
+**根因**（`modules/voice/ains4.c:237` 起，原版）：
+
+```c
+void ains4_mic_param_set(u8 mode ,s16 ains4_noise_nt)
+{
+    ...
+    if(mode==1){
+        ains4_cb.denoiseBound = 30000;          // 硬编码
+    }
+    else{                                       // enc
+        if(ains4_cb.yuan_en==1){
+            ains4_cb.denoiseBound = 6000;       // 硬编码
+        }
+        else{
+            ains4_cb.denoiseBound = 6000;       // 硬编码
+        }
+        ains4_cb.music_lev = 11;
+        ...
+```
+
+函数头注释写着「mode=0 时根据 `ains4_noise_nt` 选择 nr_level，即轻中深三档」，但**这段选档逻辑在代码里并不存在**。`ains4_noise_nt` 在整个函数体里只出现在签名中，一次都没被使用。这是厂商代码与自身注释不符的缺陷。
+
+**修复**（只改 mode=0 分支，`mode=1` 保持原样）：
+
+```diff
+ 	else{                                             //enc
+-		if(ains4_cb.yuan_en==1){
+-			ains4_cb.denoiseBound		    = 6000;  //
+-		}
+-		else{
+-			ains4_cb.denoiseBound		    = 6000;
+-		}
++		//原版此处把 denoiseBound 写成固定 6000，完全忽略入参 ains4_noise_nt，
++		//导致运行中无法调降噪量。改为使用入参，有效范围 1~32767（受 s16 形参所限）。
++		//传 <=0 时回退到原默认值 6000，保持对既有调用者的兼容。
++		s16 noise_nt = ains4_noise_nt;
++		if (noise_nt <= 0) {
++			noise_nt = 6000;                //原硬编码值，作为默认
++		} else if (noise_nt > 32767) {      //denoiseBound 是 s16，上限 32767（写 32768 会溢出成负数）
++			noise_nt = 32767;
++		}
++		ains4_cb.denoiseBound		    = noise_nt;
+ 		ains4_cb.music_lev				 = 11;
+ 		ains4_cb.overdrive_adapt_en     = 0;
+ 		ains4_cb.gain_ceil				= 32767;
+ 		ains4_cb.noise_min_en			= 0;
+```
+
+几点说明：
+
+- 合并原来那个 `if(yuan_en==1){...}else{...}` 是安全的——`yuan_en` 在函数第 247 行恒被赋为 0，两个分支赋的都是同一个值 6000。
+- 其余参数（`music_lev`、`overdrive`、`gain_ceil`、`factor`、`spp_thr` 等）**全部保持原值未动**，只改了 `denoiseBound` 这一处。
+- 加 `noise_nt <= 0` 回退，是为了让既有调用者（如 `ains4.c:153` 上电初始化、其他方案的 `ains4_mic_param_set(0,1000)`）在传异常值时仍有确定行为。
+- 上限取 32767 而非 32768：`denoiseBound` 是 `s16`，传 32768 会溢出成负数。
+
+**关于下限**：`AINS4_NOISE_NT` **不能设为 0**。降噪量按 `20*log10(nt/32768)` 计算，`nt=0` 时 `log10(0)` 是负无穷，数学上不成立；`ains4.c:235` 的函数注释也明确写「范围为 1~32768」。配置里那句「0~32768」是笔误，应以 1 为下限。按键减到 1 就是最深（约 -90dB）。
+
+**修复后默认值的处理**：`config_ab5706a_le_mic.h` 的 `AINS4_NOISE_NT` 从 **500 改成 6000**，`plugin.c` 里 `ains4_noise_cur` 直接引用它（`static s16 ains4_noise_cur = AINS4_NOISE_NT;`），保持单一来源。
+
+改成 6000 的理由：厂商原版实际生效的就是硬编码的 6000，如果让 500 生效，默认降噪会突然大幅变强，无法与第一次测试的听感对照。用 6000 作默认，听感与厂商原版一致，也方便直接对比调参效果。
+
+同时修正了配置宏的注释——原注释写「0~32768」，实际下限是 1，且这行原本也没有说明 500 这个值从未真正生效过。
+
+**验证**：修改后 `ains4_mic_param_set` 的代码从 446 字节变为 450 字节（多出 4 字节范围判断）。产物 md5 变化过程：
+
+| 版本 | md5 | 说明 |
+| --- | --- | --- |
+| 修复前 | `e35dd5ca926dc75949990043637ebc4b` | 参数被忽略，`denoiseBound` 恒为 6000 |
+| 修复后（`AINS4_NOISE_NT` 仍为 500） | `64bc4d557c9aa85032559f16382615bd` | 参数生效，但上电 500 / 按键记录 6000 不同源 |
+| 修复后（`AINS4_NOISE_NT` 统一为 6000） | `f015c85f1d3f7e632ebc22583076cff7` | 最终版本，单一来源 |
+
+**注意**：这是对厂商算法文件的修改。文件内已加注释说明原版行为和改动原因。后续升级此 SDK 时需要重新应用这处改动，否则等级调节会再次失效。
+
+> 同类问题在 571x 的 `ylcrn_L3_mic_param_set()`、`ylcrn_L2_mic_param_set()` 上同样存在（见 4.8），但 571x 按要求未做修改、保持厂商原版。
 
 ### 1.4 我方 TX 相对客户未采纳的定制
 
@@ -887,8 +991,10 @@ void plugin_nr_prev(void) { ... }   //VOL-：向后切
 
 | 分支 | 降噪算法 | 配置取值 | 代码体积 | app.dcf md5 |
 | --- | --- | --- | --- | --- |
-| `main` | **AINS4** | `YLCRN_L1_32K_EN=0`、`AINS4_EN=1`、`SRC_EN=0` | 412 KB | `e35dd5ca926dc75949990043637ebc4b` |
+| `main` | **AINS4**（参数已修复，见 1.3.3） | `YLCRN_L1_32K_EN=0`、`AINS4_EN=1`、`SRC_EN=0`、`AINS4_NOISE_NT=6000` | 412 KB | `f015c85f1d3f7e632ebc22583076cff7` |
 | `feat/573x-ylcrn` | **YLCRN_L1_32K** | `YLCRN_L1_32K_EN=1`、`AINS4_EN=0`、`SRC_EN=1` | 420 KB | `4b9a8c27300ce83a4afca450b8c3239a` |
+
+> AINS4 版本的 md5 在 1.3.3 的参数修复前后不同：修复前是 `e35dd5ca926dc75949990043637ebc4b`（参数无效、`denoiseBound` 恒为 6000），最终版是 `f015c85f1d3f7e632ebc22583076cff7`（参数生效、默认 6000）。两者默认听感一致，区别在于前者按键调不动、后者可调。
 
 两个分支的差异只集中在 6 个文件，且全部在 `sdk_ab573x_le_mic2_v013_s8047_20260129/` 内，另外两个 SDK 不受影响：
 
@@ -977,17 +1083,19 @@ NM="D:/software_download/work/rv32-toolchain_v1.5.9/rv32-toolchain_v1.5.9/instal
 
 | 版本 | 开关时打印 | 调等级时打印 |
 | --- | --- | --- |
-| AINS4 | `AINS4 ON (noise=500)` / `AINS4 OFF (noise=500)` | `AINS4 noise = 700` |
+| AINS4 | `AINS4 ON (noise=6000)` / `AINS4 OFF (noise=6000)` | `AINS4 noise = 6500` |
 | YLCRN | `YLCRN ON (level=100)` / `YLCRN OFF (level=100)` | `YLCRN level = 150` |
 
-等级参数的语义相反，调按键时要留意：
+等级参数对照：
 
-| 版本 | 参数 | 范围 | 默认 | 值的方向 |
+| 版本 | 参数 | 范围 | 实际默认 | 值的方向 |
 | --- | --- | --- | --- | --- |
-| AINS4 | `ains4_noise_nt` | 1~32767 | 500 | **值越小降噪越深** |
+| AINS4 | `ains4_noise_nt`（即 `denoiseBound`） | 1~32767（**不能为 0**） | 6000 | **值越小降噪越深** |
 | YLCRN | `YLCRN_L1_32K_LEVEL` | 1~32767 | 100 | **值越小降噪越深** |
 
 两版都是「值越小降噪越深」，所以 NEXT（等级加）在两个版本里都是**让降噪变浅**，按键手感一致。
+
+AINS4 的默认值 6000 现在是**单一来源**：`config_ab5706a_le_mic.h` 的 `AINS4_NOISE_NT`，上电初始化 (`ains4_mic_init`) 和按键调节的 `ains4_noise_cur` 都引用同一个宏，不会出现打印值与实际生效值脱节。想换默认档位改这一个宏即可。详见 1.3.3。
 
 ### 6.5 常见问题
 
