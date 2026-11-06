@@ -1,0 +1,14 @@
+# Code::Blocks 构建中间产物（.o 与目录骨架可由 build.ps1 / GUI 重建）
+app/projects/microphone/Output/obj/
+
+# 链接/打包最终产物（build.ps1 -Rebuild 或 GUI 构建可再生）
+app/projects/microphone/Output/bin/app.rv32
+app/projects/microphone/Output/bin/app.bin
+app/projects/microphone/Output/bin/app.dcf
+app/projects/microphone/Output/bin/appxm.o
+app/projects/microphone/Output/bin/app.lst
+app/projects/microphone/Output/bin/map.txt
+
+# 系统杂项
+Thumbs.db
+Desktop.ini

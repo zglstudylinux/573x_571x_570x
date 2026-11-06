@@ -1,0 +1,227 @@
+depend(0x01020100);
+
+config(SUB, "系统配置", "系统的相关配置");
+config(LIST, "提示音语言选择", "选择系统的语言", LANG_ID, 4, "英文", "中文", "中英文(出厂默认英文)", "中英文(出厂默认中文)", 0);
+config(CHECK, "无线mic接收端使能", "是否打开无线mic接收端功能", WIRELESS_ADAPTER_EN, 0);
+config(CHECK, "无线mic发射端使能", "是否打开无线mic发射端功能", WIRELESS_DEVICE_EN, 0);
+config(CHECK, "POWKEY 10s复位系统", "是否长按POWKEY 10s复位系统，用于防止系统死机", POWKEY_10S_RESET, 1);
+config(LISTVAL, "自动休眠时间", "设置自动休眠时间", SYS_SLEEP_TIME, SHORT, 30, 21, ("不休眠", 0), ("10秒钟后", 10), ("20秒钟后", 20), ("30秒钟后", 30), ("45秒钟后", 45), ("1分钟后", 60), ("2分钟后", 120), ("3分钟后", 180), ("4分钟后", 240), ("5分钟后", 300), ("6分钟后", 360), ("7分钟后", 420), ("8分钟后", 480), ("9分钟后", 540), ("10分钟后", 600), ("15分钟后", 900), ("20分钟后", 1200), ("25分钟后", 1500), ("30分钟后", 1800), ("45分钟后", 2700), ("1小时后", 3600));
+config(LISTVAL, "自动关机时间", "设置自动关机时间", SYS_OFF_TIME, 	SHORT, 300, 18, ("不关机", 0), ("30秒钟后", 30), ("1分钟后", 60),  ("2分钟后", 120), ("3分钟后", 180), ("4分钟后", 240), ("5分钟后", 300), ("6分钟后", 360), ("7分钟后", 420), ("8分钟后", 480), ("9分钟后", 540), ("10分钟后", 600), ("15分钟后", 900), ("20分钟后", 1200), ("25分钟后", 1500), ("30分钟后", 1800), ("45分钟后", 2700), ("1小时后", 3600));
+config(CHECK, "低电提示", "当电压比较低的时候，会有提示音警告", LOWPOWER_WARNING_EN, 1);
+config(LIST, "低电语音提示电压", "选择低电语音提示电压", LPWR_WARNING_VBAT, 10, "2.8V", "2.9V", "3.0V", "3.1V", "3.2V", "3.3V", "3.4V", "3.5V", "3.6V", "3.7V", 4, LOWPOWER_WARNING_EN);
+config(LIST, "低电关机电压", "选择低电关机电压", LPWR_OFF_VBAT, 11, "不关机", "2.8V", "2.9V", "3.0V", "3.1V", "3.2V", "3.3V", "3.4V", "3.5V", "3.6V", "3.7V", 2, LOWPOWER_WARNING_EN);
+config(BYTE, "低电语音播报周期(秒)", "设置低电语音播报周期(秒)", LPWR_WARNING_PERIOD, 1, 240, 30, LOWPOWER_WARNING_EN);
+config(LIST, "OSC基础电容", "配置24M晶振OSCI与OSCO基础电容（6PF）", OSC_BOTH_CAP, 2, "0PF", "6PF", 0);
+config(BYTE, "自定义OSCI电容", "配置24M晶振OSCI负载电容（0.25PF）。电容大小：n * 0.25PF + 基础电容", UOSCI_CAP, 0, 63, 45);
+config(BYTE, "自定义OSCO电容", "配置24M晶振OSCO负载电容（0.25PF）。电容大小：n * 0.25PF + 基础电容", UOSCO_CAP, 0, 63, 45);
+config(CHECK,  "优先使用产测电容值",  "是否优先使用产测校准的OSC电容值，没过产测或者关闭时使用<自定义OSCI电容>、<自定义OSCO电容>",  FT_OSC_CAP_EN,  1);
+
+config(CHECK, "HUART调试(EQ/FCC)", "是否使用HUART调试功能", HUART_EN, 0);
+config(LISTVAL, "HUART串口选择", "选择HUART的IO", HUART_SEL, BIT, 4, 0, 10, ("PA6", 0), ("PA7", 1), ("PB1", 2), ("PB2", 3), ("PB3", 4), ("PB4", 5), ("PE6(MICBIAS)", 6), ("PE7", 7), ("PF3", 8), ("VUSB", 9), HUART_EN);
+config(CHECK, "UART1调试(仓/IODM)", "是否使用UART1调试功能", UART1_EN, 0);
+config(LISTVAL, "UART1串口选择", "选择UART1的IO", UART1_SEL, BIT, 2, 2, 3, ("PA7", 0), ("PF0(MICP)", 1), ("VUSB", 2), UART1_EN);
+config(CHECK,  "是否使能NTC",  "是否使能NTC",  NTC_EN,  0);
+config(CHECK, "NTC使用内部10K上拉", "NTC是否使用内部10K上拉,使能程序中的宏USER_NTC后才有效", NTC_USER_INNER_PU,0, NTC_EN);
+config(BYTE,  "NTC阈值",  "NTC阈值",  NTC_THD_VAL,  0, 255, 100,  NTC_EN);
+
+config(SUB, "DAC配置", "DAC的相关配置");
+config(LISTVAL, "DAC声道选择", "选择DAC的输出方式, 最大输出功率: 32Ω 11.3mW", DAC_SEL, BIT, 4, 1, 6,  ("单声道", 0), ("双声道", 1), ("VCMBUF单声道", 2), ("VCMBUF双声道", 3), ("差分单声道", 4), ("差分双声道", 5));
+config(LISTVAL, "DAC输出采样率", "DAC选择输出的采样率", DAC_SPR_SEL, BIT, 2, 0, 2, ("44.1KHz", 0), ("48KHz", 1));
+config(CHECK, "DAC省VCM方案", "是否使用内部VCM，SOP16, SSOP24, SSOP28使用内部VCM", DAC_VCM_LESS_EN, 0);
+config(CHECK, "功放MUTE功能", "是否使能功放MUTE功能", SPK_MUTE_EN, 0);
+config(LISTVAL, "功放MUTE控制IO选择", "功放MUTE控制GPIO选择", SPK_MUTE_IO_SEL, BIT, 5, 0, 21, ("None", 0), ("PA3", 4), ("PA4", 5), ("PA5", 6), ("PA6", 7), ("PA7", 8), ("PB0", 9), ("PB1", 10), ("PB2", 11), ("PB3", 12), ("PB4", 13), ("PB5(WKO)", 14), ("PE0", 17), ("PE5", 22), ("PE6(MICBIAS)", 23), ("PE7", 24), ("PF0(MICP)", 25), ("PF1(MICN)", 26), ("PF2", 27), ("PF3", 28), ("VUSB", 29),SPK_MUTE_EN);
+config(CHECK, "高MUTE", "是否为高MUTE，否则为低MUTE", HIGH_MUTE, 1, SPK_MUTE_EN);
+config(BYTE, "功放MUTE延时(单位5ms)", "功放MUTE的延时控制，防止解MUTE时间不够导致声音不全。", LOUDSPEAKER_UNMUTE_DELAY, 0, 255, 6, SPK_MUTE_EN);
+config(LISTVAL, "功放AB/D控制IO选择", "功放AB/D控制GPIO选择", AMPABD_IO_SEL, BIT, 5, 0, 21, ("None", 0), ("PA3", 4), ("PA4", 5), ("PA5", 6), ("PA6", 7), ("PA7", 8), ("PB0", 9), ("PB1", 10), ("PB2", 11), ("PB3", 12), ("PB4", 13), ("PB5(WKO)", 14), ("PE0", 17), ("PE5", 22), ("PE6(MICBIAS)", 23), ("PE7", 24), ("PF0(MICP)", 25), ("PF1(MICN)", 26), ("PF2", 27), ("PF3", 28),("VUSB", 29), SPK_MUTE_EN);
+config(RELATE, AMPABD_IO_SEL, >0);
+config(LIST, "功放AB/D控制模式", "功放AB/D控制模式选择", AMPABD_TYPE, 3, "独立IO电平控制", "mute脉冲控制","分压式控制" 0);
+config(RELATE);
+config(LEVEL, 0x00);
+config(LISTVAL, "耳机检测IO选择", "选择耳机检测IO选择", EARPHONE_DET_IOSEL, BIT, 6, 0, 23, ("None", 0), ("PA3", 4), ("PA4", 5), ("PA5", 6), ("PA6", 7), ("PA7", 8), ("PB0", 9), ("PB1", 10), ("PB2", 11), ("PB3", 12), ("PB4", 13), ("PB5(WKO)", 14), ("PE0", 17), ("PE5", 22), ("PE6(MICBIAS)", 23), ("PE7", 24), ("PF0(MICP)", 25), ("PF1(MICN)", 26), ("PF2", 27), ("PF3", 28), ("复用SDCLK检测", 60), ("复用SDCMD检测", 61), ("复用PWRKEY检测", 62));
+config(LEVEL, 0x03);
+
+config(SUB, "音量配置", "音量的相关配置");
+config(LIST, "音量级数", "选择系统音量级数", VOL_MAX, 4, "16级音量", "30级音量", "32级音量", "50级音量", 2);
+config(BYTE, "开机默认音量比例", "开机默认音量比例（0~100%）", SYS_INIT_VOL_PERC, 0, 100, 100);
+config(BYTE, "开机最小音量阈值", "开机音量小于该比例（0~100%）时，恢复成阈值音量，避免开机无声", SYS_RECOVER_INITVOL_PERC, 0, 100, 15);
+config(BYTE, "提示音音量比例", "提示音音量比例（0~100%）", WARNING_VOLUME_PERC, 0, 100, 65);
+
+config(SUB, "HUART音频", "HUART AUDIO传输配置");
+config(CHECK, "HUART AUDIO输出功能", "是否使用HUART AUDIO输出功能", HUART_AUDIO_OUT_EN, 0);
+config(LISTVAL, "HUART AUDIO OUT", "选择HUART的IO", HUART_OUT_SEL, BIT, 4, 0, 11, ("PA6", 0), ("PA7", 1), ("PB1", 2), ("PB2", 3), ("PB3", 4), ("PB4", 5),("PE6", 6),("PE7", 7),("PF3", 8),("VUSB",9),("NONE", 10),HUART_AUDIO_OUT_EN);
+config(CHECK, "HUART AUDIO输入功能", "是否使用HUART AUDIO输入功能", HUART_AUDIO_IN_EN, 0);
+config(LISTVAL, "HUART AUDIO IN", "选择HUART的IO", HUART_IN_SEL, BIT, 4, 0, 11,("PA6", 0), ("PA7", 1), ("PB1", 2), ("PB2", 3), ("PB3", 4), ("PB4", 5),("PE6", 6),("PE7", 7),("PF3", 8),("VUSB",9),("NONE", 10),HUART_AUDIO_IN_EN);
+
+config(SUB, "电源配置", "电源的相关配置");
+config(CHECK, "VDDBT省电容", "是否VDDBT省电容", VDDBT_CAPLESS_EN, 0);
+config(LISTVAL, "VDDIO电压", "选择VDDIO电压, VDDAUD与VDDIO短接可能需要调VDDIO电压。", VDDIO_SEL, BIT, 4, 7, 9, ("None", 0), ("2.9V", 5), ("3.0V", 6), ("3.1V", 7), ("3.2V", 8), ("3.3V", 9), ("3.4V", 10), ("3.5V", 11), ("3.6V", 12));
+
+config(SUB, "充电配置", "充电功能的相关配置");
+config(CHECK, "充电使能", "是否打开充电功能", CHARGE_EN, 1);
+config(CHECK, "涓流充电使能", "是否使能涓流充电", CHARGE_TRICK_EN, 1, CHARGE_EN);
+config(CHECK, "插入DC禁止软开机", "PWRKEY软开机，DC Online时，禁止软开机", CHARGE_DC_NOT_PWRON, 1, CHARGE_EN);
+config(LIST, "充电截止电流", "选择充电截止电流", CHARGE_STOP_CURR, 16, "0mA", "2.5mA", "5mA", "7.5mA", "10mA", "12.5mA", "15mA", "17.5mA", "20mA", "22.5mA", "25mA", "27.5mA", "30mA", "32.5mA", "35mA", "37.5mA", 4, CHARGE_EN);
+config(LIST, "恒流充电电流", "恒流充电（电池电压大于2.9v）电流", CHARGE_CONSTANT_CURR, 44, "5mA", "10mA", "15mA", "20mA", "25mA", "30mA", "35mA", "40mA", "45mA", "50mA", "55mA", "60mA", "65mA", "70mA", "75mA", "80mA", "90mA", "100mA", "110mA", "120mA", "130mA", "140mA", "150mA", "160mA", "170mA", "180mA", "190mA", "200mA", "210mA", "220mA", "230mA", "240mA", "250mA", "260mA", "270mA", "280mA", "290mA", "300mA", "310mA", "320mA", "330mA", "340mA", "350mA", "360mA" 7, CHARGE_EN);
+config(LIST, "涓流充电电流", "涓流充电（电池电压小于2.9v）电流", CHARGE_TRICKLE_CURR, 8, "5mA", "10mA", "15mA", "20mA", "25mA", "30mA", "35mA", "40mA", 3, CHARGE_TRICK_EN);
+config(LISTVAL, "充满电蓝灯亮", "设置充满电蓝灯亮时间", CHARGE_FULL_BLED, BIT, 3, 3, 8,  ("不亮蓝灯", 0), ("亮10秒", 1), ("亮20秒", 2), ("亮30秒", 3), ("1分钟", 4), ("2分钟", 5), ("3分钟", 6), ("常亮", 7), CHARGE_EN);
+config(CHECK, "充满电自动关机", "电池充满自动关机功能，主要用于放入电池仓充电的选项", CH_FULL_AUTO_PWRDWN_EN, 1, CHARGE_EN);
+
+config(LEVEL, 0x03);
+config(SUB, "无线配置", "无线麦的相关配置");
+config(TEXT, "设备名称", "无线设备的配对名称", WL_NAME, 32, "LE-MIC2");
+config(MAC, "设备地址", "无线设备的MAC地址", BT_ADDR, 6, 41:42:00:00:00:00, 41:42:FF:FF:FF:FF, 41:42:00:00:00:01);
+config(LEVEL, 0x03);
+
+config(SUB, "RF参数", "射频RF参数");
+config(S8, "降低预置RF参数发射功率", "微调<预置RF参数>或<FT的RF参数>的发射功率，每级可降低0.5dbm发射功率（负数则增加功率）", BT_RF_PWRDEC, -6, 32, 0);
+config(CHECK,  "优先使用FT的RF参数",  "是否优先使用FT校准的RF参数，没过FT或关闭时使用<预置RF参数>或<自定义RF参数>",  FT_RF_PARAM_EN,  1);
+config(CHECK, "自定义RF参数", "打开后，有FT的芯片优先使用<FT的RF参数>，否则使用<自定义RF参数>", BT_RF_PARAM_EN, 0);
+config(LEVEL, 0x03);
+config(BYTE, "GL_PA_GAIN",    "PA_GAIN, 参考值3",         RF_PA_GAIN,    0,  7,  7, BT_RF_PARAM_EN);
+config(LEVEL, 0x03);
+config(BYTE, "GL_MIX_GAIN",   "MIX_GAIN, 参考值3~5",      RF_MIX_GAIN,   0,  7,  6, BT_RF_PARAM_EN);
+config(BYTE, "GL_DIG_GAIN",   "DIG_GAIN, 参考值30~59",    RF_DIG_GAIN,   24, 59, 55, BT_RF_PARAM_EN);
+config(LEVEL, 0x00);
+config(BYTE, "GL_PA_CAP",     "PA_CAP, 参考值12~14",      RF_PA_CAP,     0, 15, 4, BT_RF_PARAM_EN);
+config(BYTE, "GL_MIX_CAP",    "MIX_CAP, 参考值7~9",       RF_MIX_CAP,    0, 15,  8, BT_RF_PARAM_EN);
+config(BYTE, "GL_TX_DBM",     "Cable实测dbm值",           RF_TXDBM,      0, 12,  8, BT_RF_PARAM_EN);
+config(BYTE, "GL_UDF0",       "UDF(保留使用)",            RF_UDF0,       0,  0,  0, BT_RF_PARAM_EN);
+config(BYTE, "GL_UDF1",       "UDF(保留使用)",            RF_UDF1,       0,  0,  0, BT_RF_PARAM_EN);
+config(LEVEL, 0x03);
+config(LISTVAL, "降低回连功率", "是否降低回连手机或TWS的功率", BT_RF_PAGE_PWRDEC, BIT, 3, 1, 4, ("不降低", 0), ("降低3dbm", 1), ("降低6dbm", 2), ("降低9dbm", 3));
+config(LISTVAL, "降低组队功率", "是否降低TWS搜索组队的功率", BLE_RF_PAGE_PWRDEC, BIT, 3, 0, 4, ("不降低", 0), ("降低3dbm", 1), ("降低6dbm", 2), ("降低9dbm", 3));
+config(BYTE, "设置组队范围RSSI(-dbm)", "该值越小(-90dbm最小),组队范围约大", BLE_PAGE_RSSI_THR, 20, 90, 90);
+config(LEVEL, 0x03);
+
+
+config(SUB, "MIC参数", "MIC参数相关配置");
+config(LISTVAL, "MIC供电IO选择", "选择对应IO给MIC供电", MIC_BIAS_SEL, BIT, 1, 0, 2, ("None", 0), ("PE6(MICBIAS)", 1));
+config(LISTVAL, "MIC供电IO电压选择", "MIC供电IO电压选择", MIC_PWR_LEVEL, BIT, 3, 6, 8, ("1.8v", 0), ("2.4v", 1), ("2.5v", 2), ("2.6v", 3), ("2.7v", 4), ("2.8v", 5), ("2.9v", 6), ("3.0v", 7));
+config(LISTVAL, "MIC偏置电路配置", "MIC电路BIAS配置，省电容，省电阻配置", MIC_BIAS_METHOD, BIT, 2, 0, 3, ("单端MIC外部电阻电容", 0), ("单端MIC内部电阻电容", 1), ("差分MIC", 2));
+config(BYTE, "MIC模拟增益", "MIC0模拟增益配置(0~12DB), Step 6DB", MIC_ANL_GAIN, 0, 2, 2);
+config(BYTE, "MIC数字增益", "MIC数字增益配置(0~39DB), Step 1DB", MIC_DIG_GAIN, 0, 39, 20);
+
+config(SUB, "按键配置", "选择按键及按键功能配置");
+config(LISTVAL, "软开机长按时间选择", "长按PWRKEY多长时间后软开机", PWRON_PRESS_TIME,  BIT, 3, 3, 8, ("0.1秒", 0), ("0.5秒", 1), ("1秒", 2), ("1.5秒", 3), ("2秒", 4), ("2.5秒", 5), ("3秒", 6), ("3.5秒", 7));
+config(LISTVAL, "软关机长按时间选择", "长按PWRKEY多长时间后软关机", PWROFF_PRESS_TIME, BIT, 3, 3, 8, ("1.5秒", 0), ("2秒", 1), ("2.5秒", 2), ("3秒", 3), ("3.5秒", 4), ("4秒", 5), ("4.5秒", 6), ("5秒", 7));
+config(LISTVAL, "双击响应时间选择", "选择双击按键响应间隔时间", DOUBLE_KEY_TIME, BIT, 3, 1, 8, ("200ms", 0), ("300ms", 1), ("400ms", 2), ("500ms", 3), ("600ms", 4), ("700ms", 5), ("800ms", 6), ("900ms", 7));
+
+config(SUB, "LED配置", "选择及配置LED状态指示灯");
+config(CHECK, "系统指示灯(蓝灯)", "是否使用系统状态指示灯", LED_DISP_EN, 1);
+config(CHECK, "电源状态灯(红灯)", "是否使用充电/电源指示灯", LED_PWR_EN, 1);
+config(CHECK, "省电阻1个IO推两个灯", "省电阻1个IO推两个灯，不能兼容升级功能", PORT_2LED_RESLESS_EN, 1, LED_DISP_EN);
+config(CHECK, "电池低电闪灯", "电池低电时，红灯或蓝灯是否闪烁？", RLED_LOWBAT_EN, 0, LED_DISP_EN);
+config(LISTVAL, "蓝灯IO选择", "蓝灯的GPIO口选择", BLED_IO_SEL, BIT, 5, 25, 20, ("None", 0), ("PA3", 4), ("PA4", 5), ("PA5", 6), ("PA6", 7), ("PA7", 8), ("PB0", 9), ("PB1", 10), ("PB2", 11), ("PB3", 12), ("PB4", 13), ("PB5(WKO)", 14), ("PE0", 17), ("PE5", 22), ("PE6(MICBIAS)", 23), ("PE7", 24), ("PF0(MICP)", 25), ("PF1(MICN)", 26), ("PF2", 27), ("PF3", 28), LED_DISP_EN);
+config(LISTVAL, "红灯IO选择", "红灯的GPIO口选择", RLED_IO_SEL, BIT, 5, 25, 20, ("None", 0), ("PA3", 4), ("PA4", 5), ("PA5", 6), ("PA6", 7), ("PA7", 8), ("PB0", 9), ("PB1", 10), ("PB2", 11), ("PB3", 12), ("PB4", 13), ("PB5(WKO)", 14), ("PE0", 17), ("PE5", 22), ("PE6(MICBIAS)", 23), ("PE7", 24), ("PF0(MICP)", 25), ("PF1(MICN)", 26), ("PF2", 27), ("PF3", 28), LED_PWR_EN);
+
+config(CHECK, "自定义LED闪灯状态", "是否需要自定义LED闪灯状态", LED_STA_CONFIG_EN, 0);
+config(LED, "开机", "配置开机状态下的闪灯状态", LED_POWERON, 0x02, 0x01, 10, 255, 		LED_STA_CONFIG_EN);
+config(LED, "关机", "配置关机状态下的闪灯状态", LED_POWEROFF, 0x40, 0x15, 4, 255, 		LED_STA_CONFIG_EN);
+config(LED, "初始化", "配置蓝牙初始化状态下的闪灯状态", LED_BTINIT, 0x00, 0xaa, 10, 0, 	LED_STA_CONFIG_EN);
+config(LED, "回连", "配置回连状态下的闪灯状态", LED_RECONNECT, 0x00, 0xaa, 6, 0, 		LED_STA_CONFIG_EN);
+config(LED, "配对", "配置配对状态下的闪灯状态", LED_PAIRING, 0x60, 0x03, 3, 6, 			LED_STA_CONFIG_EN);
+config(LED, "已连接", "配置已连接状态下的闪灯状态", LED_CONNECTED, 0x00, 0x02, 2, 86, 	LED_STA_CONFIG_EN);
+config(LED, "播放", "配置播放状态下的闪灯状态", LED_PLAYING, 0x00, 0x02, 2, 86, 		LED_STA_CONFIG_EN);
+config(LED, "来电", "配置来电状态下的闪灯状态", LED_RING, 0x00, 0x02, 2, 86, 			LED_STA_CONFIG_EN);
+config(LED, "通话", "配置通话状态下的闪灯状态", LED_CALLING, 0x00, 0x02, 2, 86, 		LED_STA_CONFIG_EN);
+config(LED, "低电", "配置低电状态下的闪灯状态", LED_LOWBAT, 0xaa, 0x00, 6, 0, 			LED_STA_CONFIG_EN);
+
+##**********************************************************************
+## AB5669T5发射端参数配置，需要时删掉config前的#，重新编译
+#config(SUB, "无线发射配置", "用于接收端配置发射端参数的相关配置");
+#config(BYTE, "配置版本（暂时只支持0）", "版本号（暂时只支持0）", WL_SAVE_VERSION, 0, 15, 0);
+#config(CHECK, "音效参数保存功能", "是否保存无线麦的音效参数", SAVE_VOICE_PARAM_EN, 0);
+#config(LEVEL, 0x00);
+#config(BIT, "soft_gain保存等级", "soft_gain的保存等级设置", SOFT_GAIN_SAVE_LEVEL, 3, 0, 7, 0, SAVE_VOICE_PARAM_EN);
+#config(BIT, "magic保存等级", "magic的保存等级设置", MAGIC_SAVE_LEVEL, 3, 0, 4, 0, SAVE_VOICE_PARAM_EN);
+#config(BIT, "echo保存等级", "echo的保存等级设置", ECHO_SAVE_LEVEL, 3, 0, 7, 0, SAVE_VOICE_PARAM_EN);
+#config(BIT, "mic mute保存等级", "mic mute的保存等级设置", MIC_MUTE_SAVE_LEVEL, 1, 0, 1, 0, SAVE_VOICE_PARAM_EN);
+#config(LEVEL, 0x03);
+#config(CHECK, "soft_gain重配置", "是否重新配置soft_gain参数", SOFT_GAIN_REPLACE_EN, 0);
+#config(BIT, "soft_gain最大等级", "soft_gain的最大等级设置", SOFT_GAIN_MAX_LEVEL, 3, 0, 7, 5, SOFT_GAIN_REPLACE_EN);
+#config(BIT, "soft_gain默认等级", "soft_gain的默认等级设置", SOFT_GAIN_DEFAULT_LEVEL, 3, 0, 7, 2, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级0", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_0, 0, 127, 0, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级1", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_1, 0, 127, 35, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级2", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_2, 0, 127, 55, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级3", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_3, 0, 127, 75, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级4", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_4, 0, 127, 90, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级5", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_5, 0, 127, 103, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级6", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_6, 0, 127, 115, SOFT_GAIN_REPLACE_EN);
+#config(U32, "soft_gain等级7", "soft_gain音量从小到大（0~127）", SOFT_GAIN_LEVEL_7, 0, 127, 125, SOFT_GAIN_REPLACE_EN);
+#config(CHECK, "magic表重配置", "是否重新配置magic顺序参数", MAGIC_REPLACE_EN, 0);
+#config(RELATE, MAGIC_REPLACE_EN, 1);
+#config(BIT, "magic默认等级", "magic的默认等级设置", MAGIC_DEFAULT_LEVEL, 3, 0, 4, 0, MAGIC_REPLACE_EN);
+#config(S16, "magic等级0", "magic等级从小到大（参考值，原声：0, 男神：5000, 女神：-13500, 娃娃音：-30000, 魔兽：15000）", MAGIC_LEVEL_0, -32767, 32767, 0, MAGIC_REPLACE_EN);
+#config(S16, "magic等级1", "magic等级从小到大（参考值，原声：0, 男神：5000, 女神：-13500, 娃娃音：-30000, 魔兽：15000）", MAGIC_LEVEL_1, -32767, 32767, 5000, MAGIC_REPLACE_EN);
+#config(S16, "magic等级2", "magic等级从小到大（参考值，原声：0, 男神：5000, 女神：-13500, 娃娃音：-30000, 魔兽：15000）", MAGIC_LEVEL_2, -32767, 32767, -13500, MAGIC_REPLACE_EN);
+#config(S16, "magic等级3", "magic等级从小到大（参考值，原声：0, 男神：5000, 女神：-13500, 娃娃音：-30000, 魔兽：15000）", MAGIC_LEVEL_3, -32767, 32767, -30000, MAGIC_REPLACE_EN);
+#config(S16, "magic等级4", "magic等级从小到大（参考值，原声：0, 男神：5000, 女神：-13500, 娃娃音：-30000, 魔兽：15000）", MAGIC_LEVEL_4, -32767, 32767, 15000, MAGIC_REPLACE_EN);
+#config(RELATE);
+#config(CHECK, "echo重配置", "是否重新配置echo参数", ECHO_REPLACE_EN, 0);
+#config(BIT, "echo attenuation", "echo attenuation(0~90)", ECHO_LEVEL, 7, 0, 90, 50, ECHO_REPLACE_EN);
+#config(U16, "echo干度", "（参考值，0---32767）", ECHO_DRY_USER, 0, 32767, 32767, ECHO_REPLACE_EN);
+#config(U16, "echo湿度", "（参考值，0---32767）", ECHO_WET_USER, 0, 32767, 20000, ECHO_REPLACE_EN);
+#config(BIT, "echo最大等级", "echo的最大等级设置", ECHO_MAX_LEVEL, 3, 0, 7, 5, ECHO_REPLACE_EN);
+#config(BIT, "echo默认等级", "echo的默认等级设置", ECHO_DEFAULT_LEVEL, 3, 0, 7, 2, ECHO_REPLACE_EN);
+#config(BIT, "echo等级0", "echo等级从小到大（0~416）", ECHO_LEVEL_0, 9, 0, 416, 0, ECHO_REPLACE_EN);
+#config(BIT, "echo等级1", "echo等级从小到大（0~416）", ECHO_LEVEL_1, 9, 0, 416, 59, ECHO_REPLACE_EN);
+#config(BIT, "echo等级2", "echo等级从小到大（0~416）", ECHO_LEVEL_2, 9, 0, 416, 118, ECHO_REPLACE_EN);
+#config(BIT, "echo等级3", "echo等级从小到大（0~416）", ECHO_LEVEL_3, 9, 0, 416, 177, ECHO_REPLACE_EN);
+#config(BIT, "echo等级4", "echo等级从小到大（0~416）", ECHO_LEVEL_4, 9, 0, 416, 236, ECHO_REPLACE_EN);
+#config(BIT, "echo等级5", "echo等级从小到大（0~416）", ECHO_LEVEL_5, 9, 0, 416, 295, ECHO_REPLACE_EN);
+#config(BIT, "echo等级6", "echo等级从小到大（0~416）", ECHO_LEVEL_6, 9, 0, 416, 354, ECHO_REPLACE_EN);
+#config(BIT, "echo等级7", "echo等级从小到大（0~416）", ECHO_LEVEL_7, 9, 0, 416, 413, ECHO_REPLACE_EN);
+#config(CHECK, "mic mute重配置", "是否重新配置mic mute参数", MIC_MUTE_REPLACE_EN, 0);
+#config(BIT, "mic mute默认值", "mic mute默认值设置", MIC_MUTE_DEFAULT_LEVEL, 1, 0, 1, 0, MIC_MUTE_REPLACE_EN);
+#config(CHECK, "无线麦PP键配置", "PP键配置，一般是KEY_1作为PP键", WL_KEY1_MSC_CFG_EN, 0);
+#config(RELATE, WL_KEY1_MSC_CFG_EN, 1);
+#config(LISTVAL, "PP键短按", "PP键短按的功能", WL_KEY1_MSC_KS_SEL,    BIT, 5, 1,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "PP键长按", "PP键长按的功能", WL_KEY1_MSC_KL_SEL,    BIT, 5, 17,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "PP键长按抬起", "PP键长按抬起的功能", WL_KEY1_MSC_KL_UP_SEL,    BIT, 5, 19,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "PP键长按保持", "PP键长按保持的功能", WL_KEY1_MSC_KL_HOLD_SEL,	  BIT, 5, 18,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "PP键双击", "PP键双击的功能", WL_KEY1_MSC_KD_SEL, BIT, 5, 9,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(RELATE);
+#config(CHECK, "无线麦+键配置", "+键配置，一般是KEY_2作为+键", WL_KEY2_MSC_CFG_EN, 0);
+#config(RELATE, WL_KEY2_MSC_CFG_EN, 1);
+#config(LISTVAL, "+键短按", "+键短按的功能", WL_KEY2_MSC_KS_SEL,    BIT, 5, 3,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "+键长按", "+键长按的功能", WL_KEY2_MSC_KL_SEL,    BIT, 5, 11,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "+键长按抬起", "+键长按抬起的功能", WL_KEY2_MSC_KL_UP_SEL,    BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "+键长按保持", "+键长按保持的功能", WL_KEY2_MSC_KL_HOLD_SEL,	  BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "+键双击", "+键双击的功能", WL_KEY2_MSC_KD_SEL, BIT, 5, 5,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(RELATE);
+#config(CHECK, "无线麦-键配置", "-键配置，一般是KEY_3作为-键", WL_KEY3_MSC_CFG_EN, 0);
+#config(RELATE, WL_KEY3_MSC_CFG_EN, 1);
+#config(LISTVAL, "-键短按", "-键短按的功能", WL_KEY3_MSC_KS_SEL,    BIT, 5, 4,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "-键长按", "-键长按的功能", WL_KEY3_MSC_KL_SEL,    BIT, 5, 10,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "-键长按抬起", "-键长按抬起的功能", WL_KEY3_MSC_KL_UP_SEL,    BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "-键长按保持", "-键长按保持的功能", WL_KEY3_MSC_KL_HOLD_SEL,	  BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "-键双击", "-键双击的功能", WL_KEY3_MSC_KD_SEL, BIT, 5, 6,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(RELATE);
+#config(CHECK, "无线麦功能键配置", "功能键配置，一般是KEY_4作为功能键", WL_KEY4_MSC_CFG_EN, 0);
+#config(RELATE, WL_KEY4_MSC_CFG_EN, 1);
+#config(LISTVAL, "功能键短按", "功能键短按的功能", WL_KEY4_MSC_KS_SEL,    BIT, 5, 7,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "功能键长按", "功能键长按的功能", WL_KEY4_MSC_KL_SEL,    BIT, 5, 8,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "功能键长按抬起", "功能键长按抬起的功能", WL_KEY4_MSC_KL_UP_SEL,    BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "功能键长按保持", "功能键长按保持的功能", WL_KEY4_MSC_KL_HOLD_SEL,	  BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(LISTVAL, "功能键双击", "功能键双击的功能", WL_KEY4_MSC_KD_SEL, BIT, 5, 0,  20, ("无", 0), ("MUTE/UNMUTE", 1), ("PWROFF", 2), ("VOL+", 3), ("VOL-", 4), ("ECHO+", 5), ("ECHO-", 6), ("MAGIC切换", 7), ("RM_VOICE切换", 8), ("MUSIC_PP", 9), ("MUSIC_NEXT", 10), ("MUSIC_PREV", 11), ("MUSIC_VOL+", 12), ("MUSIC_VOL-", 13), ("USER+", 14), ("USER-", 15), ("USER改变", 16), ("PWROFF_START", 17), ("PWROFF_HOLD", 18), ("PWROFF_RELEASE", 19));
+#config(RELATE);
+#config(CHECK, "eq参数重配置", "是否重新配置eq参数", EQ_REPLACE_EN, 0);
+#config(CHECK, "drc参数重配置", "是否重新配置drc参数", DRC_REPLACE_EN, 0);
+#config(LEVEL, 0x00);
+#config(BIT, "patch使能", "patch设置", PATCH_EN, 1, 0, 1, 0);
+#config(LEVEL, 0x03);
+#config(CHECK, "dnr重配置", "是否重新配置dnr", DNR_REPLACE_EN, 0);
+#config(U16, "dnr阈值", "（参考值，0---65536）", DNR_MAX_POW, 0, 65535, 480, DNR_REPLACE_EN);
+##**********************************************************************
+
+config(LEVEL, 0x0E);
+config(SUB, "产测参数", "产测校准的一些参数，不要改动！");
+config(KEEP);
+config(BYTE, "产测OSCI电容", "产测校准的24M晶振OSCI负载电容，单位0.25PF。不要改动默认值0。", OSCI_CAP, 0, 63, 0);
+config(BYTE, "产测OSCO电容", "产测校准的24M晶振OSCO负载电容，单位0.25PF。不要改动默认值0。", OSCO_CAP, 0, 63, 0);
+config(KEEPEND)
+
+config(LEVEL, 0x100);
+makecfgfile(xcfg.bin);
+makecfgdef(xcfg.h);
+xcopy(xcfg.h, ../../xcfg.h);

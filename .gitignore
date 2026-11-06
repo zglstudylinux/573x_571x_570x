@@ -1,0 +1,55 @@
+# =====================================================================
+# 可编译重新生成的产物（不进版本库）
+# 用 build.ps1 / build.ps1 -Rebuild 或 Code::Blocks GUI 构建即可重建
+#
+# 各 SDK 位于 sdk_*/app/projects/<产品>/ 下，故路径统一加 **/ 前缀，
+# 在任意深度生效。
+# =====================================================================
+
+# 构建中间目录（.o 与目录骨架）
+**/app/projects/*/Output/obj/
+
+# 链接/打包最终产物
+**/app/projects/*/Output/bin/app.rv32
+**/app/projects/*/Output/bin/app.bin
+**/app/projects/*/Output/bin/app.dcf
+**/app/projects/*/Output/bin/appxm.o
+**/app/projects/*/Output/bin/app.lst
+**/app/projects/*/Output/bin/map.txt
+
+# OTA 测试临时产物
+**/app/projects/*/Output/bin/*.fot
+**/app/projects/*/Output/bin/app_ota_test_v2.dcf
+
+# 库文件备份 / 厂商临时替换
+**/app/libs/*.bak_*
+**/app/libs/*.new_from_vendor
+
+# =====================================================================
+# 本地开发环境与 IDE 缓存（因人而异，不进版本库）
+# =====================================================================
+
+# ZCode 本地工具配置
+**/.zcode/
+**/.zcodeignore
+
+# Code::Blocks 工程缓存
+#   app.depend 含本机绝对路径，换机器后无意义
+#   app.layout 记录编辑器光标/标签位置
+**/app/projects/*/app.depend
+**/app/projects/*/app.layout
+
+# 编辑器 / 系统杂项
+.vscode/settings.json
+Thumbs.db
+Desktop.ini
+~$*.docx
+
+# =====================================================================
+# 特意保留（不要误删）—— 属于原始工程文件
+#   Output/bin 下的 app.xm / download.xm / res.xm / xcfg.xm   构建输入
+#   Output/bin 下的 res.bin / xcfg.bin / updater.bin / unpack.bin / header.bin   预置资源
+#   Output/bin 下的 prebuild.bat / postbuild.bat / copy_tone.bat   厂商构建脚本
+#   Output/bin/Settings/   配置工具工程与提示音资源
+#   app/libs/ 下的 .a 闭源库（不是构建产物）
+# =====================================================================
