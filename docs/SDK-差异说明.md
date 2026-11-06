@@ -873,8 +873,136 @@ void plugin_nr_prev(void) { ... }   //VOL-：向后切
 
 | 工程 | 打印口 | 可观测内容 |
 | --- | --- | --- |
-| TX 573x | PB3 | `AINS4 ON/OFF (noise=N)`、`AINS4 noise = N` |
+| TX 573x | PB3 | 见 6.1，随算法版本变化 |
 | RX 5706 | PE7 | `[USB] PLUG IN (PC)` / `PLUG OUT`，仅拔插检测 |
 | TX/RX 571x | VUSB | `NR: DNR_FRE ON` / `NR: DNN_L1 ON` / `NR: OFF` |
 
 > 注意 573x 的 PB3 与 `USBDP` 同 IO，571x 的 VUSB 与 USB VBUS 同引脚。两个 TX 都不需要 USB 声卡，因此可以占用；但如果后续要在这些口上插 USB，必须先把打印改到别的引脚。
+
+---
+
+## 六、573x 两套降噪方案的切换与编译
+
+573x 的 TX 有两套降噪实现，放在不同 git 分支上，切换时不需要手改代码。
+
+| 分支 | 降噪算法 | 配置取值 | 代码体积 | app.dcf md5 |
+| --- | --- | --- | --- | --- |
+| `main` | **AINS4** | `YLCRN_L1_32K_EN=0`、`AINS4_EN=1`、`SRC_EN=0` | 412 KB | `e35dd5ca926dc75949990043637ebc4b` |
+| `feat/573x-ylcrn` | **YLCRN_L1_32K** | `YLCRN_L1_32K_EN=1`、`AINS4_EN=0`、`SRC_EN=1` | 420 KB | `4b9a8c27300ce83a4afca450b8c3239a` |
+
+两个分支的差异只集中在 6 个文件，且全部在 `sdk_ab573x_le_mic2_v013_s8047_20260129/` 内，另外两个 SDK 不受影响：
+
+- `app/projects/microphone/config_ab5706a_le_mic.h`（算法开关与等级）
+- `app/projects/microphone/plugin/plugin.c` / `plugin.h`（开关与等级调节实现）
+- `app/projects/microphone/port/port_key.c`（三键映射）
+- `app/projects/message/msg_device.c` / `msg_adapter.c`（消息分发）
+
+### 6.1 切换步骤
+
+切换前先确认工作区干净，否则 git 会拒绝：
+
+```bash
+cd D:/Code/work/client/573x_and_571x_5706/deepseek
+git status --short          # 有输出说明有未提交改动
+```
+
+如果有未提交改动，二选一（**别直接丢弃**，见下方「常见问题」）：
+
+```bash
+git stash push -u -m "临时保存"
+# 或
+git commit -am "wip"
+```
+
+切到 AINS4 版：
+
+```bash
+git checkout main
+```
+
+切到 YLCRN 版：
+
+```bash
+git checkout feat/573x-ylcrn
+```
+
+切回后如果之前 stash 过，恢复改动：
+
+```bash
+git stash pop
+```
+
+### 6.2 切换后必须重新编译
+
+**这一步不能省。** 产物（`app.rv32` / `app.bin` / `app.dcf`）在 `.gitignore` 里，不随分支切换变化——磁盘上留着的永远是上一次编译出来的那份。切了分支不重编，烧录的还是旧算法的固件。
+
+```bash
+cd sdk_ab573x_le_mic2_v013_s8047_20260129/app/projects/microphone
+powershell -ExecutionPolicy Bypass -NoProfile -File build.ps1
+```
+
+要彻底排除旧 .o 的干扰，用 `-Rebuild` 从零构建：
+
+```bash
+powershell -ExecutionPolicy Bypass -NoProfile -File build.ps1 -Rebuild
+```
+
+脚本每次都会全量编译所有源文件，所以普通构建和 `-Rebuild` 的产物是一致的；`-Rebuild` 额外会先清空 `Output/obj` 和产物文件，适合怀疑有脏数据时使用。
+
+### 6.3 确认当前烧的是哪个版本
+
+编译后核对产物，最可靠的是查符号：
+
+```bash
+cd sdk_ab573x_le_mic2_v013_s8047_20260129/app/projects/microphone
+NM="D:/software_download/work/rv32-toolchain_v1.5.9/rv32-toolchain_v1.5.9/install/RV32-V3/bin/riscv32-elf-nm.exe"
+
+"$NM" Output/bin/app.rv32 | grep -c plugin_ains4   # AINS4 版输出 3
+"$NM" Output/bin/app.rv32 | grep -c plugin_ylcrn   # YLCRN 版输出 3
+```
+
+两个数字一个有值一个为 0，就说明是哪个版本。也可以看 `CODE SIZE`（AINS4 = 412 KB，YLCRN = 420 KB）或直接比对 md5（见本节开头的表）。
+
+### 6.4 两个版本的串口输出与按键行为
+
+按键行为两版完全一致：
+
+| 按键 | 短按 | 双击 | 长按 |
+| --- | --- | --- | --- |
+| P/P | 降噪开/关 | — | 关机 |
+| PREV | 降噪等级减（降噪更深） | 音量减 | 配对 |
+| NEXT | 降噪等级加（降噪变浅） | 音量加 | 配对 |
+
+串口打印（PB3）随版本不同：
+
+| 版本 | 开关时打印 | 调等级时打印 |
+| --- | --- | --- |
+| AINS4 | `AINS4 ON (noise=500)` / `AINS4 OFF (noise=500)` | `AINS4 noise = 700` |
+| YLCRN | `YLCRN ON (level=100)` / `YLCRN OFF (level=100)` | `YLCRN level = 150` |
+
+等级参数的语义相反，调按键时要留意：
+
+| 版本 | 参数 | 范围 | 默认 | 值的方向 |
+| --- | --- | --- | --- | --- |
+| AINS4 | `ains4_noise_nt` | 1~32767 | 500 | **值越小降噪越深** |
+| YLCRN | `YLCRN_L1_32K_LEVEL` | 1~32767 | 100 | **值越小降噪越深** |
+
+两版都是「值越小降噪越深」，所以 NEXT（等级加）在两个版本里都是**让降噪变浅**，按键手感一致。
+
+### 6.5 常见问题
+
+**`git checkout` 报错 `Your local changes would be overwritten`**
+
+有未提交改动。先 `git stash push -u -m "说明"` 保存，切换后再 `git stash pop`。**不要用 `git checkout -- .` 或 `git reset --hard`**，那会直接丢掉改动。
+
+**切了分支但听感没变化**
+
+忘了重新编译，或者烧的是旧 `app.dcf`。按 6.3 查符号确认。
+
+**`git stash pop` 报冲突**
+
+说明切换后目标分支的同一文件也被改过。用 `git stash show -p` 看内容，手工合并，或先 `git stash branch <新分支名>` 把改动落到独立分支上再处理。
+
+**两套都想留着随时切**
+
+这正是当前的做法：`main` = AINS4，`feat/573x-ylcrn` = YLCRN。不要在某一个分支上反复改，那样会丢历史。
